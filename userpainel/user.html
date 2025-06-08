@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Usuário - Helpdesk</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons from Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for ticket columns */
+        .ticket-column::-webkit-scrollbar {
+            width: 8px;
+        }
+        .ticket-column::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        .ticket-column::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .ticket-column::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-100">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-slate-800">Portal de Suporte</h1>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-slate-600 mr-4">Olá, Usuário!</span>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Action Button -->
+        <div class="mb-8">
+             <button id="open-modal-btn" class="flex items-center gap-2 bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all shadow-lg">
+                <i class="ph ph-plus-circle text-xl"></i>
+                Abrir Novo Chamado
+            </button>
+        </div>
+
+        <!-- Ticket Status Columns -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Pendente -->
+            <div class="bg-white rounded-xl shadow-sm p-4">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2"><i class="ph ph-clock text-yellow-500"></i>Pendente</h2>
+                <div id="pending-column" class="ticket-column space-y-4 h-96 overflow-y-auto pr-2">
+                   <!-- Tickets pendentes serão inseridos aqui -->
+                </div>
+            </div>
+            <!-- Em Curso -->
+            <div class="bg-white rounded-xl shadow-sm p-4">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2"><i class="ph ph-spinner-gap text-blue-500 animate-spin"></i>Em Curso</h2>
+                <div id="inprogress-column" class="ticket-column space-y-4 h-96 overflow-y-auto pr-2">
+                    <!-- Tickets em curso serão inseridos aqui -->
+                </div>
+            </div>
+            <!-- Fechado -->
+            <div class="bg-white rounded-xl shadow-sm p-4">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2"><i class="ph ph-check-circle text-green-500"></i>Fechado</h2>
+                <div id="closed-column" class="ticket-column space-y-4 h-96 overflow-y-auto pr-2">
+                    <!-- Tickets fechados serão inseridos aqui -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico de Chamados -->
+        <div class="mt-12 bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold text-slate-700 mb-4">Histórico Completo</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ticket ID</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Assunto</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Data de Abertura</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Última Atualização</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="bg-white divide-y divide-slate-200">
+                        <!-- Linhas do histórico serão inseridas aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+    
+    <!-- Modal para Novo Chamado -->
+    <div id="new-ticket-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Criar Novo Chamado</h2>
+                <button id="close-modal-btn" class="text-slate-500 hover:text-slate-800">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+            </div>
+            <form id="new-ticket-form">
+                <div class="mb-4">
+                    <label for="ticket-subject" class="block text-sm font-medium text-slate-600 mb-2">Assunto</label>
+                    <input type="text" id="ticket-subject" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                 <div class="mb-4">
+                    <label for="ticket-priority" class="block text-sm font-medium text-slate-600 mb-2">Prioridade</label>
+                    <select id="ticket-priority" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Baixa">Baixa</option>
+                        <option value="Média" selected>Média</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="ticket-description" class="block text-sm font-medium text-slate-600 mb-2">Descrição</label>
+                    <textarea id="ticket-description" rows="5" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                </div>
+                <!-- NOVO: Seção de Upload de Imagem -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-slate-600 mb-2">Anexar Imagem (Opcional)</label>
+                    <div id="image-upload-area" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <i class="ph ph-image-square text-4xl text-slate-400 mx-auto"></i>
+                            <div class="flex text-sm text-slate-600">
+                                <label for="ticket-image-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                    <span>Carregar um ficheiro</span>
+                                    <input id="ticket-image-upload" name="ticket-image-upload" type="file" class="sr-only" accept="image/png, image/jpeg, image/gif">
+                                </label>
+                                <p class="pl-1">ou arraste e solte</p>
+                            </div>
+                            <p class="text-xs text-slate-500">PNG, JPG, GIF até 10MB</p>
+                        </div>
+                    </div>
+                    <!-- NOVO: Pré-visualização da Imagem -->
+                    <div id="image-preview-container" class="mt-4 hidden">
+                         <p class="text-sm font-medium text-slate-700 mb-2">Pré-visualização:</p>
+                         <div class="relative w-40 h-40">
+                            <img id="image-preview" src="" alt="Image Preview" class="w-full h-full object-cover rounded-md border border-slate-200">
+                            <button id="remove-image-btn" type="button" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-0 h-6 w-6 flex items-center justify-center text-lg font-bold shadow-md hover:bg-red-700">&times;</button>
+                         </div>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+                        Enviar Chamado
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dados de exemplo
+            const initialTickets = [
+                { id: 725, subject: 'Computador não liga', date: '2025-06-08', status: 'Pendente', priority: 'Alta' },
+                { id: 724, subject: 'Impressora com falha na impressão', date: '2025-06-07', status: 'Em Curso', priority: 'Média' },
+                { id: 723, subject: 'Erro ao acessar sistema de vendas', date: '2025-06-07', status: 'Em Curso', priority: 'Alta' },
+                { id: 721, subject: 'Solicitação de novo monitor', date: '2025-06-05', status: 'Fechado', priority: 'Baixa', closedDate: '2025-06-06' },
+                { id: 720, subject: 'Rede Wi-Fi instável no 2º andar', date: '2025-06-04', status: 'Fechado', priority: 'Média', closedDate: '2025-06-05' },
+            ];
+
+            let tickets = [...initialTickets];
+            let uploadedFile = null;
+
+            // Elementos do DOM
+            const openModalBtn = document.getElementById('open-modal-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const newTicketModal = document.getElementById('new-ticket-modal');
+            const newTicketForm = document.getElementById('new-ticket-form');
+
+            // Elementos de Upload
+            const imageUploadInput = document.getElementById('ticket-image-upload');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const imagePreview = document.getElementById('image-preview');
+            const imageUploadArea = document.getElementById('image-upload-area');
+            const removeImageBtn = document.getElementById('remove-image-btn');
+
+
+            const pendingColumn = document.getElementById('pending-column');
+            const inprogressColumn = document.getElementById('inprogress-column');
+            const closedColumn = document.getElementById('closed-column');
+            const historyTableBody = document.getElementById('history-table-body');
+            
+            // Funções de Renderização
+            const priorityClasses = {
+                'Baixa': 'bg-green-100 text-green-800',
+                'Média': 'bg-yellow-100 text-yellow-800',
+                'Alta': 'bg-red-100 text-red-800',
+            }
+
+            const statusClasses = {
+                'Pendente': 'bg-yellow-100 text-yellow-800',
+                'Em Curso': 'bg-blue-100 text-blue-800',
+                'Fechado': 'bg-green-100 text-green-800',
+            }
+
+            const renderTickets = () => {
+                pendingColumn.innerHTML = '';
+                inprogressColumn.innerHTML = '';
+                closedColumn.innerHTML = '';
+                historyTableBody.innerHTML = '';
+
+                // Ordena os tickets para que os mais recentes apareçam primeiro
+                const sortedTickets = [...tickets].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                sortedTickets.forEach(ticket => {
+                    const ticketCardHTML = `
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-bold text-slate-800 mb-2">${ticket.subject}</h3>
+                                <span class="text-xs font-semibold px-2 py-1 rounded-full ${priorityClasses[ticket.priority]}">${ticket.priority}</span>
+                            </div>
+                            <p class="text-sm text-slate-500">Ticket #${ticket.id}</p>
+                            <p class="text-sm text-slate-500">Aberto em: ${new Date(ticket.date).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                    `;
+
+                    if (ticket.status === 'Pendente') {
+                        pendingColumn.innerHTML += ticketCardHTML;
+                    } else if (ticket.status === 'Em Curso') {
+                        inprogressColumn.innerHTML += ticketCardHTML;
+                    } else if (ticket.status === 'Fechado') {
+                        closedColumn.innerHTML += ticketCardHTML;
+                    }
+
+                     const historyRowHTML = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">#${ticket.id}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${ticket.subject}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${new Date(ticket.date).toLocaleDateString('pt-BR')}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${ticket.closedDate ? new Date(ticket.closedDate).toLocaleDateString('pt-BR') : new Date(ticket.date).toLocaleDateString('pt-BR')}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClasses[ticket.status]}">
+                                    ${ticket.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                    historyTableBody.innerHTML += historyRowHTML;
+                });
+            };
+
+            // Funções do Modal
+            const openModal = () => newTicketModal.classList.remove('hidden');
+            const closeModal = () => {
+                newTicketModal.classList.add('hidden');
+                newTicketForm.reset();
+                resetImageUpload();
+            };
+
+            openModalBtn.addEventListener('click', openModal);
+            closeModalBtn.addEventListener('click', closeModal);
+            window.addEventListener('click', (e) => {
+                if(e.target === newTicketModal) {
+                    closeModal();
+                }
+            });
+
+            // Funções de Upload e Pré-visualização de Imagem
+            const handleFileSelect = (file) => {
+                if (file && file.type.startsWith('image/')) {
+                    uploadedFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                        imagePreviewContainer.classList.remove('hidden');
+                        imageUploadArea.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Por favor, selecione um ficheiro de imagem válido (PNG, JPG, GIF).');
+                }
+            };
+
+            const resetImageUpload = () => {
+                uploadedFile = null;
+                imageUploadInput.value = ''; // Limpa o input de ficheiro
+                imagePreview.src = '';
+                imagePreviewContainer.classList.add('hidden');
+                imageUploadArea.classList.remove('hidden');
+            };
+            
+            imageUploadInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+            
+            // Lida com Arrastar e Soltar (Drag and Drop)
+            imageUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                imageUploadArea.classList.add('border-blue-500');
+            });
+            imageUploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                imageUploadArea.classList.remove('border-blue-500');
+            });
+            imageUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                imageUploadArea.classList.remove('border-blue-500');
+                handleFileSelect(e.dataTransfer.files[0]);
+            });
+
+            removeImageBtn.addEventListener('click', resetImageUpload);
+
+            // Lógica de Novo Chamado
+            newTicketForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const subject = document.getElementById('ticket-subject').value;
+                const priority = document.getElementById('ticket-priority').value;
+                const description = document.getElementById('ticket-description').value;
+                
+                const newTicket = {
+                    id: Math.floor(Math.random() * 1000) + 730,
+                    subject: subject,
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'Pendente',
+                    priority: priority,
+                    description: description,
+                    image: uploadedFile ? { name: uploadedFile.name, size: uploadedFile.size } : null
+                };
+
+                tickets.unshift(newTicket);
+                console.log("Novo chamado criado:", newTicket); // Mostra no console o novo chamado, incluindo a imagem
+                renderTickets();
+                closeModal();
+            });
+
+            // Renderização Inicial
+            renderTickets();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proativa - Helpdesk Login</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilo customizado para o corpo da página e fonte */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Classe para esconder elementos */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md">
+        <!-- NOVO: Seção do Logo e Nome da Empresa -->
+        <div class="text-center mb-8">
+            <img 
+                src="https://placehold.co/96x96/2563eb/ffffff?text=P" 
+                alt="[Image of Logo da Proativa]" 
+                class="mx-auto h-24 w-24 rounded-full shadow-lg border-4 border-white"
+                onerror="this.onerror=null;this.src='https://placehold.co/96x96/cccccc/333333?text=Error';"
+            >
+            <h1 class="mt-5 text-4xl font-bold text-slate-800">Proativa</h1>
+            <p class="text-slate-500">Bem-vindo ao portal de suporte</p>
+        </div>
+
+        <!-- TELA DE LOGIN DO USUÁRIO -->
+        <div id="user-login-view" class="bg-white p-8 rounded-xl shadow-lg transition-all">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-bold text-slate-700">Login do Usuário</h2>
+            </div>
+
+            <form id="user-login-form">
+                <div class="mb-4">
+                    <label for="user-email" class="block text-sm font-medium text-slate-600 mb-2">Email</label>
+                    <input type="email" id="user-email" name="email" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="seu.email@exemplo.com" required>
+                </div>
+                <div class="mb-6">
+                    <label for="user-password" class="block text-sm font-medium text-slate-600 mb-2">Senha</label>
+                    <input type="password" id="user-password" name="password" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="********" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                    Entrar
+                </button>
+            </form>
+
+            <div class="text-center mt-6">
+                <a href="#" id="show-admin-login" class="text-sm text-slate-500 hover:text-blue-600 hover:underline">É um administrador? Faça login aqui.</a>
+            </div>
+        </div>
+
+        <!-- TELA DE LOGIN DO ADMIN -->
+        <div id="admin-login-view" class="bg-white p-8 rounded-xl shadow-lg transition-all hidden">
+             <div class="text-center mb-6">
+                <h2 class="text-xl font-bold text-slate-700">Painel do Administrador</h2>
+            </div>
+
+            <form id="admin-login-form">
+                <div class="mb-4">
+                    <label for="admin-email" class="block text-sm font-medium text-slate-600 mb-2">Email de Admin</label>
+                    <input type="email" id="admin-email" name="email" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="admin@empresa.com" required>
+                </div>
+                <div class="mb-6">
+                    <label for="admin-password" class="block text-sm font-medium text-slate-600 mb-2">Senha</label>
+                    <input type="password" id="admin-password" name="password" class="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="********" required>
+                </div>
+                <button type="submit" class="w-full bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition-colors duration-300">
+                    Acessar como Admin
+                </button>
+            </form>
+
+            <div class="text-center mt-6">
+                <a href="#" id="show-user-login" class="text-sm text-slate-500 hover:text-red-600 hover:underline">Não é administrador? Voltar.</a>
+            </div>
+        </div>
+
+        <!-- Pop-up de Mensagem -->
+        <div id="message-popup" class="hidden fixed top-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl transition-transform transform translate-x-full">
+            <p id="message-text"></p>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elementos da UI
+            const userLoginView = document.getElementById('user-login-view');
+            const adminLoginView = document.getElementById('admin-login-view');
+            const showAdminLoginLink = document.getElementById('show-admin-login');
+            const showUserLoginLink = document.getElementById('show-user-login');
+
+            const userLoginForm = document.getElementById('user-login-form');
+            const adminLoginForm = document.getElementById('admin-login-form');
+            
+            const messagePopup = document.getElementById('message-popup');
+            const messageText = document.getElementById('message-text');
+
+            // --- Lógica para alternar entre as telas ---
+
+            // Mostra o login de admin e esconde o de usuário
+            showAdminLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                userLoginView.classList.add('hidden');
+                adminLoginView.classList.remove('hidden');
+            });
+
+            // Mostra o login de usuário e esconde o de admin
+            showUserLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                adminLoginView.classList.add('hidden');
+                userLoginView.classList.remove('hidden');
+            });
+            
+            // --- Funções Auxiliares ---
+
+            // Função para mostrar pop-ups de mensagem
+            const showMessage = (message, isError = false) => {
+                messageText.textContent = message;
+                messagePopup.classList.remove('bg-green-500', 'bg-red-500', 'hidden', 'translate-x-full');
+                
+                if (isError) {
+                    messagePopup.classList.add('bg-red-500');
+                } else {
+                    messagePopup.classList.add('bg-green-500');
+                }
+                
+                // Animação de entrada
+                setTimeout(() => {
+                    messagePopup.classList.remove('translate-x-full');
+                }, 10);
+                
+                // Esconde o pop-up após 3 segundos
+                setTimeout(() => {
+                    messagePopup.classList.add('translate-x-full');
+                }, 3000);
+            };
+
+            // --- Lógica de Submissão dos Formulários ---
+
+            // Formulário de Login do Usuário
+            userLoginForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Impede o envio padrão do formulário
+                const email = e.target.email.value;
+                const password = e.target.password.value;
+                
+                console.log('Tentativa de Login de Usuário:');
+                console.log(`Email: ${email}`);
+                console.log(`Senha: [Protegida]`);
+                
+                // Simulação de sucesso
+                showMessage('Login de usuário efetuado com sucesso!');
+                
+                // Limpa o formulário
+                userLoginForm.reset();
+                
+                // Em um aplicativo real, você redirecionaria o usuário aqui:
+                // window.location.href = '/dashboard-usuario.html';
+            });
+
+            // Formulário de Login do Administrador
+            adminLoginForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Impede o envio padrão do formulário
+                const email = e.target.email.value;
+                const password = e.target.password.value;
+
+                console.log('Tentativa de Login de Administrador:');
+                console.log(`Email: ${email}`);
+                console.log(`Senha: [Protegida]`);
+
+                // Simulação de sucesso
+                showMessage('Login de administrador efetuado com sucesso!');
+                
+                // Limpa o formulário
+                adminLoginForm.reset();
+
+                // Em um aplicativo real, você redirecionaria o admin aqui:
+                // window.location.href = '/dashboard-admin.html';
+            });
+        });
+    </script>
+</body>
+</html>
